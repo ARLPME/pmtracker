@@ -1,0 +1,871 @@
+<!-- P&M Department Task Tracker v5 -->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Archivo:wght@400;500;600;700;900&display=swap');
+  :root{
+    --bg:#e8edf4;--bg-2:#f2f5fa;--bg-3:#ffffff;--bg-4:#dde3ec;
+    --line:#c8d0de;--line-2:#b0bcd0;
+    --ink:#1a2236;--ink-dim:#3d5070;--ink-mute:#7a8eaa;
+    --accent:#2563eb;--accent-2:#1d4ed8;
+    --ok:#16a34a;--warn:#d97706;--danger:#dc2626;--info:#0891b2;--purple:#7c3aed;
+    --ok-bg:#dcfce7;--warn-bg:#fef3c7;--danger-bg:#fee2e2;--info-bg:#cffafe;--purple-bg:#ede9fe;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Archivo',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;padding:20px;
+    background-image:linear-gradient(rgba(37,99,235,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(37,99,235,.04) 1px,transparent 1px);background-size:40px 40px;}
+  .app{max-width:1600px;margin:0 auto;}
+
+  .header{border:1px solid var(--line);background:var(--bg-3);padding:20px 24px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+  .brand{display:flex;align-items:center;gap:14px;}
+  .brand-mark{width:44px;height:44px;background:var(--accent);display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-weight:700;color:#fff;font-size:18px;transform:rotate(-3deg);}
+  .brand-text h1{font-size:22px;font-weight:900;letter-spacing:-.02em;text-transform:uppercase;color:var(--ink);}
+  .brand-text p{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-mute);text-transform:uppercase;letter-spacing:.1em;margin-top:2px;}
+  .header-actions{display:flex;gap:10px;flex-wrap:wrap;}
+  .btn{font-family:'Archivo',sans-serif;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.05em;padding:10px 16px;border:1px solid var(--line-2);background:var(--bg-2);color:var(--ink-dim);cursor:pointer;transition:all .15s;}
+  .btn:hover{border-color:var(--accent);color:var(--accent);background:var(--bg-3);}
+  .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .btn-primary:hover{background:var(--accent-2);border-color:var(--accent-2);color:#fff;}
+  .btn-ghost{background:transparent;border-color:transparent;}
+  .btn-ghost:hover{background:var(--bg-2);border-color:var(--line);}
+  .btn-danger-outline:hover{border-color:var(--danger);color:var(--danger);background:var(--danger-bg);}
+  .btn-success{background:var(--ok);color:#fff;border-color:var(--ok);}
+  .btn-success:hover{background:#15803d;border-color:#15803d;color:#fff;}
+  .btn-sm{padding:7px 14px;font-size:11px;}
+
+  .tabs{display:flex;margin-bottom:16px;border-bottom:2px solid var(--line);flex-wrap:wrap;}
+  .tab{background:none;border:none;color:var(--ink-mute);font-family:'Archivo',sans-serif;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.08em;padding:14px 22px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;}
+  .tab:hover{color:var(--ink);}.tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+  .tab-badge{display:inline-block;background:var(--bg-4);border:1px solid var(--line);padding:1px 7px;margin-left:6px;font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--ink-mute);}
+
+  /* KPI */
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px;}
+  .kpi{border:1px solid var(--line);background:var(--bg-3);padding:16px;position:relative;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+  .kpi::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent);}
+  .kpi.ok::before{background:var(--ok);}.kpi.warn::before{background:var(--warn);}.kpi.danger::before{background:var(--danger);}.kpi.info::before{background:var(--info);}
+  .kpi-label{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-mute);margin-bottom:6px;}
+  .kpi-value{font-size:32px;font-weight:900;line-height:1;color:var(--ink);}
+  .kpi-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-mute);margin-top:4px;}
+  /* progress mini-bar inside KPI */
+  .kpi-prog-wrap{margin-top:8px;height:6px;background:var(--bg-4);border:1px solid var(--line);position:relative;}
+  .kpi-prog-actual{height:100%;background:var(--info);transition:width .4s;}
+  .kpi-prog-sched{position:absolute;top:0;bottom:0;width:2px;background:var(--danger);}
+  .kpi-prog-label{display:flex;justify-content:space-between;margin-top:4px;font-family:'JetBrains Mono',monospace;font-size:10px;}
+
+  /* CHARTS */
+  .charts{display:grid;grid-template-columns:1.2fr 1fr;gap:12px;margin-bottom:20px;}
+  @media(max-width:900px){.charts{grid-template-columns:1fr;}}
+  .panel{border:1px solid var(--line);background:var(--bg-3);padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+  .panel-title{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-mute);margin-bottom:14px;display:flex;align-items:center;}
+  .panel-title::after{content:'';flex:1;height:1px;background:var(--line);margin-left:12px;}
+  .stack-bar{height:28px;display:flex;border:1px solid var(--line);background:var(--bg-4);margin-bottom:16px;overflow:hidden;}
+  .stack-bar-seg{display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:#fff;transition:flex .4s;}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-dim);}
+  .legend-item{display:flex;align-items:center;gap:6px;}.legend-dot{width:10px;height:10px;}
+  .workload-list{display:flex;flex-direction:column;gap:10px;}
+  .workload-row{display:grid;grid-template-columns:160px 1fr 40px;align-items:center;gap:10px;font-size:12px;}
+  .workload-name{font-weight:700;color:var(--ink);}
+  .workload-role{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-mute);text-transform:uppercase;}
+  .workload-bar{height:14px;background:var(--bg-4);border:1px solid var(--line);}
+  .workload-fill{height:100%;background:linear-gradient(90deg,var(--info),var(--accent));}
+  .workload-count{font-family:'JetBrains Mono',monospace;font-size:11px;text-align:right;color:var(--ink-dim);}
+
+  .filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center;}
+  .filter-input,.filter-select{background:var(--bg-3);border:1px solid var(--line);color:var(--ink);padding:8px 12px;font-family:'Archivo',sans-serif;font-size:13px;outline:none;}
+  .filter-input:focus,.filter-select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.1);}
+
+  /* TASK CARDS */
+  .task-list{display:flex;flex-direction:column;gap:8px;}
+  .task-card{border:1px solid var(--line);background:var(--bg-3);padding:14px 16px;display:grid;grid-template-columns:auto 1fr auto auto auto auto;gap:14px;align-items:center;transition:all .15s;box-shadow:0 1px 2px rgba(0,0,0,.04);}
+  .task-card:hover{border-color:var(--accent);box-shadow:0 2px 8px rgba(37,99,235,.08);}
+  .task-card.overdue{border-left:4px solid var(--danger);background:linear-gradient(90deg,var(--danger-bg) 0,var(--bg-3) 40px);}
+  .task-card.due-soon{border-left:4px solid var(--warn);background:linear-gradient(90deg,var(--warn-bg) 0,var(--bg-3) 40px);}
+  .task-card.done{border-left:4px solid var(--ok);opacity:.75;}
+  .task-card.in-progress{border-left:4px solid var(--info);}
+  .task-card.procurement{border-left:4px solid #c2410c;background:linear-gradient(90deg,#fff7ed 0,var(--bg-3) 40px);}
+  .task-id{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-mute);background:var(--bg-4);padding:4px 8px;border:1px solid var(--line);}
+  .task-main{min-width:0;}
+  .task-title{font-weight:700;font-size:14px;margin-bottom:3px;color:var(--ink);}
+  .task-title.done-text{text-decoration:line-through;color:var(--ink-mute);}
+  .task-meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-mute);display:flex;gap:12px;flex-wrap:wrap;}
+  .task-people{font-size:11px;color:var(--ink-dim);max-width:220px;}
+  .task-people-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-mute);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:2px;}
+  .badge{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;padding:4px 9px;text-transform:uppercase;letter-spacing:.04em;border:1px solid transparent;}
+  .badge-priority-high{background:var(--danger-bg);color:var(--danger);border-color:rgba(220,38,38,.3);}
+  .badge-priority-medium{background:var(--warn-bg);color:var(--warn);border-color:rgba(217,119,6,.3);}
+  .badge-priority-low{background:var(--info-bg);color:var(--info);border-color:rgba(8,145,178,.3);}
+  .badge-status-todo{background:var(--bg-4);color:var(--ink-mute);border-color:var(--line);}
+  .badge-status-in-progress{background:var(--info-bg);color:var(--info);border-color:rgba(8,145,178,.3);}
+  .badge-status-procurement{background:#fff7ed;color:#c2410c;border-color:rgba(194,65,12,.3);}
+  .badge-status-blocked{background:var(--purple-bg);color:var(--purple);border-color:rgba(124,58,237,.3);}
+  .badge-status-done{background:var(--ok-bg);color:var(--ok);border-color:rgba(22,163,74,.3);}
+  .task-actions{display:flex;gap:6px;}
+  .icon-btn{width:30px;height:30px;background:var(--bg-2);border:1px solid var(--line);color:var(--ink-mute);cursor:pointer;display:grid;place-items:center;font-size:14px;transition:all .15s;}
+  .icon-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--bg-3);}
+  .icon-btn.del-btn:hover{border-color:var(--danger);color:var(--danger);background:var(--danger-bg);}
+  .empty-state{border:2px dashed var(--line);padding:50px;text-align:center;color:var(--ink-mute);background:var(--bg-3);}
+  .empty-state h3{font-size:16px;margin-bottom:8px;color:var(--ink-dim);}.empty-state p{font-size:13px;}
+
+  /* GANTT */
+  .gantt-wrap{border:1px solid var(--line);background:var(--bg-3);overflow-x:auto;position:relative;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+  .gantt{min-width:1100px;position:relative;}
+  .gantt-header{display:flex;border-bottom:2px solid var(--line);position:sticky;top:0;background:var(--bg-2);z-index:2;}
+  .gantt-label-col{width:280px;min-width:280px;border-right:1px solid var(--line);padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-mute);text-transform:uppercase;letter-spacing:.08em;}
+  .gantt-timeline{flex:1;display:flex;}
+  .gantt-day{flex:1;min-width:38px;border-right:1px solid var(--line);padding:6px 4px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-mute);}
+  .gantt-day.weekend{background:rgba(0,0,0,.025);}.gantt-day.today{background:rgba(37,99,235,.08);color:var(--accent);font-weight:700;}
+  .gantt-day-num{font-size:12px;color:var(--ink);font-weight:700;}.gantt-day.today .gantt-day-num{color:var(--accent);}
+  .gantt-row{display:flex;border-bottom:1px solid var(--line);min-height:62px;position:relative;}
+  .gantt-row:hover{background:rgba(37,99,235,.015);}
+  .gantt-row-label{width:280px;min-width:280px;border-right:1px solid var(--line);padding:10px 14px;display:flex;flex-direction:column;justify-content:center;}
+  .gantt-row-title{font-size:13px;font-weight:700;color:var(--ink);}
+  .gantt-row-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-mute);margin-top:2px;}
+  .gantt-row-track{flex:1;position:relative;display:flex;}
+  .gantt-row-track .gantt-day{padding:0;border-bottom:none;}
+
+  /* GANTT BAR — progress aware */
+  .gantt-bar{position:absolute;top:10px;bottom:10px;display:flex;flex-direction:column;justify-content:center;padding:0 8px;cursor:pointer;overflow:hidden;transition:filter .15s;z-index:1;border:none;border-radius:2px;}
+  .gantt-bar:hover{filter:brightness(.92);z-index:5;}
+  .gantt-bar.priority-high{background:#fca5a5;} /* lighter base, progress fill adds color */
+  .gantt-bar.priority-medium{background:#fde68a;}
+  .gantt-bar.priority-low{background:#bae6fd;}
+  .gantt-bar.done{background:var(--ok-bg);}
+  .gantt-bar.overdue{outline:2px dashed var(--danger);outline-offset:-2px;animation:pulse 1.5s infinite;}
+  /* progress fill overlay */
+  .gantt-bar-fill{position:absolute;left:0;top:0;bottom:0;pointer-events:none;border-radius:2px 0 0 2px;transition:width .3s;}
+  .gantt-bar.priority-high .gantt-bar-fill{background:var(--danger);}
+  .gantt-bar.priority-medium .gantt-bar-fill{background:var(--warn);}
+  .gantt-bar.priority-low .gantt-bar-fill{background:var(--info);}
+  .gantt-bar.done .gantt-bar-fill{background:var(--ok);}
+  .gantt-bar.overdue .gantt-bar-fill{background:var(--danger);}
+  /* text on top of fill */
+  .gantt-bar-content{position:relative;z-index:1;min-width:0;}
+  .gantt-bar-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px;font-weight:700;line-height:1.3;color:var(--ink);}
+  .gantt-bar.priority-high .gantt-bar-title{color:#7f1d1d;}
+  .gantt-bar.priority-medium .gantt-bar-title{color:#78350f;}
+  .gantt-bar.priority-low .gantt-bar-title{color:#0c4a6e;}
+  .gantt-bar.done .gantt-bar-title{color:#14532d;}
+  .gantt-bar-names{font-family:'JetBrains Mono',monospace;font-size:9px;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;margin-top:1px;color:inherit;}
+  /* behind/ahead chip */
+  .gantt-delta{position:absolute;right:4px;top:50%;transform:translateY(-50%);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;padding:2px 5px;border-radius:2px;z-index:3;white-space:nowrap;pointer-events:none;}
+  .gantt-delta.behind{background:var(--danger-bg);color:var(--danger);}
+  .gantt-delta.ahead{background:var(--ok-bg);color:var(--ok);}
+  .gantt-delta.ontrack{background:var(--info-bg);color:var(--info);}
+
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.65;}}
+  .gantt-today-line{position:absolute;top:0;bottom:0;width:2px;background:var(--accent);z-index:3;pointer-events:none;}
+  .gantt-today-line::before{content:'TODAY';position:absolute;top:-22px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;padding:2px 6px;letter-spacing:.1em;white-space:nowrap;}
+  .gantt-controls{display:flex;gap:10px;margin-bottom:14px;align-items:center;flex-wrap:wrap;}
+  .gantt-legend{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:12px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-mute);}
+  .gantt-legend-item{display:flex;align-items:center;gap:5px;}
+  .gantt-legend-swatch{width:14px;height:8px;border-radius:1px;}
+
+  /* TEAM */
+  .team-bar{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px;}
+  .team-bar-left h2{font-size:18px;font-weight:900;text-transform:uppercase;letter-spacing:.02em;color:var(--ink);}
+  .team-bar-left p{font-size:12px;color:var(--ink-mute);margin-top:4px;}
+  .save-bar{display:flex;align-items:center;gap:14px;background:var(--bg-3);border:1px solid var(--line);padding:12px 18px;box-shadow:0 1px 3px rgba(0,0,0,.05);margin-bottom:16px;flex-wrap:wrap;}
+  .save-bar-msg{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-mute);}
+  .save-bar-msg.dirty{color:var(--warn);font-weight:700;}
+  .save-bar-msg.saved{color:var(--ok);font-weight:700;}
+
+  .role-block{border:1px solid var(--line);background:var(--bg-3);margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+  .role-block-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--bg-2);}
+  .role-block-left{display:flex;align-items:center;gap:12px;}
+  .role-color-bar{width:4px;height:28px;flex-shrink:0;}
+  .role-block-title{font-weight:900;font-size:14px;text-transform:uppercase;letter-spacing:.05em;}
+  .role-block-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-mute);background:var(--bg-3);border:1px solid var(--line);padding:3px 8px;}
+  .role-block-body{padding:14px 16px;}
+  .name-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px;}
+  .name-row{display:flex;align-items:center;gap:8px;background:var(--bg-2);border:1px solid var(--line);padding:8px 10px;transition:border-color .15s;}
+  .name-row:focus-within{border-color:var(--accent);background:var(--bg-3);box-shadow:0 0 0 3px rgba(37,99,235,.08);}
+  .name-row-num{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-mute);min-width:20px;text-align:right;flex-shrink:0;}
+  .name-input{flex:1;background:transparent;border:none;color:var(--ink);font-family:'Archivo',sans-serif;font-size:13px;font-weight:700;outline:none;padding:2px 4px;min-width:0;}
+  .name-input::placeholder{color:var(--ink-mute);font-weight:400;}
+  .name-row-stats{display:flex;gap:10px;font-family:'JetBrains Mono',monospace;font-size:10px;white-space:nowrap;flex-shrink:0;}
+  .stat-chip{display:flex;flex-direction:column;align-items:center;min-width:28px;}
+  .stat-chip-num{font-size:13px;font-weight:700;line-height:1;color:var(--ink);}
+  .stat-chip-label{font-size:8px;color:var(--ink-mute);text-transform:uppercase;letter-spacing:.05em;}
+  .unsaved-dot{width:7px;height:7px;border-radius:50%;background:var(--warn);opacity:0;transition:opacity .2s;flex-shrink:0;}
+  .unsaved-dot.show{opacity:1;}
+
+  /* Add person inline form */
+  .add-person-form{border:1px dashed var(--accent);background:rgba(37,99,235,.04);padding:14px 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-top:10px;}
+  .add-person-form label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-mute);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:5px;font-weight:700;}
+  .add-person-form input,.add-person-form select{background:var(--bg-3);border:1px solid var(--line);color:var(--ink);padding:8px 10px;font-family:'Archivo',sans-serif;font-size:13px;outline:none;}
+  .add-person-form input:focus,.add-person-form select:focus{border-color:var(--accent);}
+
+  /* MODAL */
+  .modal-overlay{position:fixed;inset:0;background:rgba(15,22,36,.5);display:none;align-items:center;justify-content:center;z-index:100;padding:20px;backdrop-filter:blur(3px);}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--bg-3);border:1px solid var(--line);max-width:700px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.15);}
+  .modal-head{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;background:var(--bg-2);}
+  .modal-head h2{font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:.02em;color:var(--ink);}
+  .modal-body{padding:22px;}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .form-grid .full{grid-column:1/-1;}
+  .form-group label{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-mute);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;font-weight:700;}
+  .form-group input,.form-group textarea,.form-group select{width:100%;background:var(--bg-2);border:1px solid var(--line);color:var(--ink);padding:10px 12px;font-family:'Archivo',sans-serif;font-size:13px;outline:none;}
+  .form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.1);}
+  .form-group textarea{resize:vertical;min-height:70px;}
+  /* progress slider */
+  .progress-row{display:flex;align-items:center;gap:12px;}
+  .progress-row input[type=range]{flex:1;accent-color:var(--accent);}
+  .progress-val{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--accent);min-width:40px;text-align:right;}
+  .progress-track{height:8px;background:var(--bg-4);border:1px solid var(--line);margin-top:6px;position:relative;overflow:hidden;}
+  .progress-track-fill{height:100%;background:var(--accent);transition:width .2s;}
+  .checkbox-grid{max-height:220px;overflow-y:auto;border:1px solid var(--line);background:var(--bg-2);}
+  .cg-title{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;padding:8px 12px 4px;border-bottom:1px solid var(--line);background:var(--bg-4);font-weight:700;}
+  .cg-body{display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:4px 8px 8px;}
+  .cg-body label{display:flex;align-items:center;gap:8px;padding:5px 4px;font-size:12px;cursor:pointer;color:var(--ink);}
+  .cg-body label:hover{background:rgba(37,99,235,.05);}
+  .cg-body input[type=checkbox]{width:auto;margin:0;accent-color:var(--accent);}
+  .modal-foot{padding:16px 22px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px;background:var(--bg-2);}
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--bg-3);border:1px solid var(--line);border-left:4px solid var(--ok);padding:12px 18px;font-size:13px;font-weight:600;color:var(--ink);z-index:200;transform:translateY(100px);opacity:0;transition:all .3s;box-shadow:0 4px 12px rgba(0,0,0,.1);}
+  .toast.show{transform:translateY(0);opacity:1;}.toast.err{border-left-color:var(--danger);}
+  .view{display:none;}.view.active{display:block;}
+</style>
+
+<div class="app">
+  <header class="header">
+    <div class="brand">
+      <div class="brand-mark">P&amp;M</div>
+      <div class="brand-text">
+        <h1>Planning &amp; Maintenance Tracker</h1>
+        <p>Departmental Task &amp; Resource Control</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" id="newTaskBtn">+ New Task</button>
+      <button class="btn btn-ghost" id="exportBtn">⬇ Export CSV</button>
+      <button class="btn btn-ghost btn-danger-outline" id="resetBtn">↻ Reset Demo</button>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-view="dashboard">Dashboard</button>
+    <button class="tab" data-view="tasks">Tasks <span class="tab-badge" id="tasksCount">0</span></button>
+    <button class="tab" data-view="gantt">Gantt</button>
+    <button class="tab" data-view="team">Team <span class="tab-badge" id="teamCount">0</span></button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="view active" id="view-dashboard">
+    <div class="kpi-grid" id="kpiGrid"></div>
+    <div class="charts">
+      <div class="panel"><div class="panel-title">Status Distribution</div><div class="stack-bar" id="statusBar"></div><div class="legend" id="statusLegend"></div></div>
+      <div class="panel"><div class="panel-title">Priority Breakdown</div><div class="stack-bar" id="priorityBar"></div><div class="legend" id="priorityLegend"></div></div>
+    </div>
+    <div class="panel" style="margin-bottom:20px;"><div class="panel-title">Workload by Personnel (Active Tasks)</div><div class="workload-list" id="workloadList"></div></div>
+    <div class="panel"><div class="panel-title">⚠ Overdue &amp; Due Soon</div><div class="task-list" id="alertList"></div></div>
+  </div>
+
+  <!-- TASKS -->
+  <div class="view" id="view-tasks">
+    <div class="filters">
+      <input type="text" class="filter-input" id="searchInput" placeholder="Search title / remarks..." style="min-width:240px;">
+      <select class="filter-select" id="filterStatus">
+        <option value="">All Statuses</option><option value="todo">To Do</option><option value="in-progress">In Progress</option><option value="procurement">Procurement</option><option value="blocked">Blocked</option><option value="done">Done</option>
+      </select>
+      <select class="filter-select" id="filterPriority">
+        <option value="">All Priorities</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option>
+      </select>
+      <select class="filter-select" id="filterPerson"><option value="">All Personnel</option></select>
+      <select class="filter-select" id="filterDue">
+        <option value="">All Deadlines</option><option value="overdue">Overdue</option><option value="week">Due this week</option><option value="month">Due this month</option>
+      </select>
+    </div>
+    <div class="task-list" id="taskList"></div>
+  </div>
+
+  <!-- GANTT -->
+  <div class="view" id="view-gantt">
+    <div class="gantt-controls">
+      <button class="btn" id="ganttPrev">← Earlier</button>
+      <button class="btn" id="ganttToday">Today</button>
+      <button class="btn" id="ganttNext">Later →</button>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-mute);" id="ganttRange"></span>
+    </div>
+    <div class="gantt-legend">
+      <div class="gantt-legend-item"><div class="gantt-legend-swatch" style="background:var(--danger);"></div>Actual progress (High)</div>
+      <div class="gantt-legend-item"><div class="gantt-legend-swatch" style="background:var(--warn);"></div>Actual progress (Medium)</div>
+      <div class="gantt-legend-item"><div class="gantt-legend-swatch" style="background:var(--info);"></div>Actual progress (Low)</div>
+      <div class="gantt-legend-item"><div style="width:2px;height:12px;background:var(--accent);"></div><span style="margin-left:4px;">Today = expected 100% up to here</span></div>
+      <div class="gantt-legend-item"><span style="background:var(--danger-bg);color:var(--danger);padding:1px 5px;font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:700;">▼ Behind</span></div>
+      <div class="gantt-legend-item"><span style="background:var(--ok-bg);color:var(--ok);padding:1px 5px;font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:700;">▲ Ahead</span></div>
+      <div style="margin-left:auto;font-size:10px;color:var(--ink-mute);">Click bar to edit · Fill = days worked · TODAY line = days elapsed</div>
+    </div>
+    <div class="gantt-wrap"><div class="gantt" id="ganttChart"></div></div>
+  </div>
+
+  <!-- TEAM -->
+  <div class="view" id="view-team">
+    <div class="team-bar">
+      <div class="team-bar-left">
+        <h2>Team Roster</h2>
+        <p>Edit names inline · Add extra personnel with the form at bottom of each group · Save when done.</p>
+      </div>
+    </div>
+    <div class="save-bar">
+      <span class="save-bar-msg" id="saveBarMsg">No unsaved changes</span>
+      <button class="btn btn-success btn-sm" id="saveRosterBtn" disabled>✓ Save Roster</button>
+      <button class="btn btn-sm" id="discardRosterBtn" disabled style="display:none;">✕ Discard</button>
+    </div>
+    <div id="teamSections"></div>
+  </div>
+</div>
+
+<!-- TASK MODAL -->
+<div class="modal-overlay" id="taskModal">
+  <div class="modal">
+    <div class="modal-head"><h2 id="taskModalTitle">New Task</h2><button class="icon-btn" id="taskModalClose">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group full"><label>Task Title *</label><input type="text" id="f_title" placeholder="e.g. Replace Pump P-204 bearings"></div>
+        <div class="form-group"><label>Start Date *</label><input type="date" id="f_start"></div>
+        <div class="form-group"><label>Deadline *</label><input type="date" id="f_due"></div>
+        <div class="form-group"><label>Priority</label>
+          <select id="f_priority"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select>
+        </div>
+        <div class="form-group"><label>Status</label>
+          <select id="f_status"><option value="todo">To Do</option><option value="in-progress">In Progress</option><option value="procurement">Procurement</option><option value="blocked">Blocked</option><option value="done">Done</option></select>
+        </div>
+        <div class="form-group full">
+          <label>Days Worked — <span id="f_progress_label">0 days</span></label>
+          <div class="progress-row">
+            <input type="range" id="f_progress" min="0" max="30" step="1" value="0">
+            <span class="progress-val" id="f_progress_val">0d</span>
+          </div>
+          <div class="progress-track"><div class="progress-track-fill" id="f_progress_fill" style="width:0%"></div></div>
+        </div>
+        <div class="form-group full"><label>Assigned Personnel</label><div class="checkbox-grid" id="f_personnel"></div></div>
+        <div class="form-group full"><label>Remarks (delays, blockers, notes)</label>
+          <textarea id="f_remarks" placeholder="e.g. Awaiting spare parts / Blocked by production / Hand-over pending…"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn" id="taskModalCancel">Cancel</button><button class="btn btn-primary" id="taskModalSave">Save Task</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const ROLES=[
+  {key:'pmm',       label:'P&M Manager',    color:'#7c3aed',slots:1},
+  {key:'pme',       label:'P&M Engineer',    color:'#2563eb',slots:1},
+  {key:'foreman',   label:'Foreman',          color:'#d97706',slots:2},
+  {key:'tradesman', label:'Tradesman',         color:'#0891b2',slots:12},
+  {key:'attendant', label:'Airport Attendant', color:'#16a34a',slots:8},
+];
+const ROLE_MAP=Object.fromEntries(ROLES.map(r=>[r.key,r]));
+
+let tasks=[],team=[],ganttOffset=0,editingTaskId=null;
+const TASKS_KEY='pm_tasks_v6',TEAM_KEY='pm_team_v5';
+
+/* ======== SEED ======== */
+function seedTeam(){
+  const defs=[
+    {role:'pmm',      names:['PMM (Manager)']},
+    {role:'pme',      names:['PME (You)']},
+    {role:'foreman',  names:['Foreman 1','Foreman 2']},
+    {role:'tradesman',names:['Tradesman 1','Tradesman 2','Tradesman 3','Tradesman 4','Tradesman 5','Tradesman 6','Tradesman 7','Tradesman 8','Tradesman 9','Tradesman 10','Tradesman 11','Tradesman 12']},
+    {role:'attendant',names:['Attendant 1','Attendant 2','Attendant 3','Attendant 4','Attendant 5','Attendant 6','Attendant 7','Attendant 8']},
+  ];
+  let out=[],c=1;
+  defs.forEach(({role,names})=>names.forEach(name=>out.push({id:`p-${c++}`,name,role})));
+  return out;
+}
+function seedTasks(){
+  const d=n=>{const x=new Date();x.setDate(x.getDate()+n);return x.toISOString().slice(0,10);};
+  return [
+    {id:'T-001',title:'Monthly inspection — Cooling Tower CT-1',start:d(-3),due:d(2), priority:'high',  status:'in-progress',progress:2, personnel:[],remarks:'Awaiting scaffolding from contractor',created:d(-5)},
+    {id:'T-002',title:'Replace bearings on Pump P-204',          start:d(-2),due:d(-1),priority:'high',  status:'in-progress',progress:1, personnel:[],remarks:'OVERDUE — spare part delivered late',created:d(-7)},
+    {id:'T-003',title:'Lubrication route — North Plant',          start:d(0), due:d(1), priority:'medium',status:'todo',       progress:0, personnel:[],remarks:'',created:d(-2)},
+    {id:'T-004',title:'Electrical panel cleaning MCC-3',          start:d(1), due:d(4), priority:'medium',status:'todo',       progress:0, personnel:[],remarks:'Coordinate 4hr shutdown with production',created:d(-1)},
+    {id:'T-005',title:'Conveyor belt alignment — Line 2',         start:d(-1),due:d(0), priority:'high',  status:'blocked',    progress:0, personnel:[],remarks:'Blocked: waiting for production hand-over',created:d(-3)},
+    {id:'T-006',title:'Quarterly safety audit prep',              start:d(2), due:d(9), priority:'medium',status:'todo',       progress:0, personnel:[],remarks:'',created:d(0)},
+    {id:'T-007',title:'Boiler tube inspection — Unit B',          start:d(-7),due:d(-2),priority:'high',  status:'done',       progress:5, personnel:[],remarks:'Completed ahead of schedule',created:d(-10)},
+    {id:'T-008',title:'CMMS data entry backlog clearance',        start:d(0), due:d(5), priority:'low',   status:'in-progress',progress:2, personnel:[],remarks:'',created:d(-1)},
+    {id:'T-009',title:'HVAC filter replacement — Admin block',    start:d(3), due:d(6), priority:'low',   status:'todo',       progress:0, personnel:[],remarks:'',created:d(0)},
+    {id:'T-010',title:'Annual shutdown planning meeting',         start:d(4), due:d(7), priority:'high',  status:'todo',       progress:0, personnel:[],remarks:'Prepare scope and resource plan',created:d(0)},
+    {id:'T-011',title:'Compressor C-101 vibration analysis',      start:d(-1),due:d(2), priority:'medium',status:'in-progress',progress:2, personnel:[],remarks:'Data logger installed, awaiting 48hr capture',created:d(-2)},
+    {id:'T-012',title:'Workshop 5S audit',                        start:d(1), due:d(3), priority:'low',   status:'todo',       progress:0, personnel:[],remarks:'',created:d(0)},
+  ];
+}
+
+/* ======== STORAGE ======== */
+async function loadAll(){
+  try{const r=await window.storage.get(TASKS_KEY);tasks=r&&r.value?JSON.parse(r.value):seedTasks();}catch{tasks=seedTasks();}
+  try{await window.storage.set(TASKS_KEY,JSON.stringify(tasks));}catch{}
+  try{const r=await window.storage.get(TEAM_KEY);team=r&&r.value?JSON.parse(r.value):seedTeam();}catch{team=seedTeam();}
+  try{await window.storage.set(TEAM_KEY,JSON.stringify(team));}catch{}
+}
+async function saveTasks(){try{await window.storage.set(TASKS_KEY,JSON.stringify(tasks));}catch{showToast('Task save failed',true);}}
+async function saveTeam(){try{await window.storage.set(TEAM_KEY,JSON.stringify(team));}catch{showToast('Roster save failed',true);}}
+
+/* ======== UTILS ======== */
+const todayStr=()=>new Date().toISOString().slice(0,10);
+const parseLocal=s=>{const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);};
+const dateDiff=(a,b)=>Math.round((parseLocal(b)-parseLocal(a))/864e5);
+const isOverdue=t=>t.status!=='done'&&dateDiff(todayStr(),t.due)<0;
+const isDueSoon=t=>{if(t.status==='done')return false;const d=dateDiff(todayStr(),t.due);return d>=0&&d<=3;};
+const person=id=>team.find(p=>p.id===id);
+const nextTaskId=()=>{const n=tasks.map(t=>parseInt(t.id.split('-')[1])).filter(n=>!isNaN(n));return 'T-'+String(Math.max(...n,0)+1).padStart(3,'0');};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function showToast(msg,isErr=false){const el=document.getElementById('toast');el.textContent=msg;el.classList.toggle('err',isErr);el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2400);}
+
+/* taskDuration: total calendar days start→due (min 1) */
+function taskDuration(t){return Math.max(1,dateDiff(t.start,t.due));}
+/* daysElapsed: days into the task as of today, capped at duration */
+function daysElapsed(t){return Math.min(taskDuration(t),Math.max(0,dateDiff(t.start,todayStr())));}
+
+/* ======== SAVE BAR ======== */
+function markDirty(){
+  document.getElementById('saveBarMsg').textContent='● Unsaved changes — click Save Roster to apply';
+  document.getElementById('saveBarMsg').className='save-bar-msg dirty';
+  document.getElementById('saveRosterBtn').disabled=false;
+  document.getElementById('discardRosterBtn').disabled=false;
+  document.getElementById('discardRosterBtn').style.display='';
+}
+function markClean(){
+  document.getElementById('saveBarMsg').textContent='✓ Roster saved — changes applied everywhere';
+  document.getElementById('saveBarMsg').className='save-bar-msg saved';
+  document.getElementById('saveRosterBtn').disabled=true;
+  document.getElementById('discardRosterBtn').disabled=true;
+  document.getElementById('discardRosterBtn').style.display='none';
+  setTimeout(()=>{document.getElementById('saveBarMsg').textContent='No unsaved changes';document.getElementById('saveBarMsg').className='save-bar-msg';},3000);
+}
+function markNone(){
+  document.getElementById('saveBarMsg').textContent='No unsaved changes';
+  document.getElementById('saveBarMsg').className='save-bar-msg';
+  document.getElementById('saveRosterBtn').disabled=true;
+  document.getElementById('discardRosterBtn').disabled=true;
+  document.getElementById('discardRosterBtn').style.display='none';
+}
+
+/* ======== DASHBOARD ======== */
+function renderDashboard(){
+  const total=tasks.length,done=tasks.filter(t=>t.status==='done').length,
+    inPList=tasks.filter(t=>t.status==='in-progress'),
+    inP=inPList.length,
+    ov=tasks.filter(isOverdue).length,ds=tasks.filter(isDueSoon).length,
+    rate=total?Math.round(done/total*100):0;
+
+  // Avg actual days worked vs avg days elapsed (for in-progress tasks)
+  const avgActualDays = inP ? Math.round(inPList.reduce((s,t)=>s+(t.progress||0),0)/inP*10)/10 : 0;
+  const avgElapsedDays= inP ? Math.round(inPList.reduce((s,t)=>s+daysElapsed(t),0)/inP*10)/10 : 0;
+  const deltaDays     = Math.round((avgActualDays - avgElapsedDays)*10)/10;
+  const deltaStr = deltaDays===0 ? 'on track'
+    : deltaDays>0 ? `▲ ${deltaDays}d ahead of schedule`
+    : `▼ ${Math.abs(deltaDays)}d behind schedule`;
+  const deltaColor = deltaDays===0?'var(--info)':deltaDays>0?'var(--ok)':'var(--danger)';
+  // For the mini-bar, express as % of max for visual only
+  const barMax = inP ? Math.max(...inPList.map(t=>taskDuration(t)),1) : 1;
+  const actualBarPct = Math.min(100, avgActualDays/barMax*100);
+  const elapsedBarPct= Math.min(100, avgElapsedDays/barMax*100);
+
+  document.getElementById('kpiGrid').innerHTML=`
+    <div class="kpi info"><div class="kpi-label">Total Tasks</div><div class="kpi-value">${total}</div><div class="kpi-sub">across department</div></div>
+    <div class="kpi" style="--before-bg:var(--info)">
+      <div class="kpi-label">In Progress</div>
+      <div class="kpi-value" style="color:var(--info);">${inP}</div>
+      <div class="kpi-sub">avg <strong style="color:var(--ink);">${avgActualDays}d</strong> worked of ${avgElapsedDays}d elapsed</div>
+      ${inP?`
+      <div class="kpi-prog-wrap">
+        <div class="kpi-prog-actual" style="width:${actualBarPct}%"></div>
+        <div class="kpi-prog-sched" style="left:${elapsedBarPct}%" title="Days elapsed: ${avgElapsedDays}d"></div>
+      </div>
+      <div class="kpi-prog-label">
+        <span>Worked ${avgActualDays}d</span>
+        <span style="color:${deltaColor};font-weight:700;">${deltaStr}</span>
+        <span>Elapsed ${avgElapsedDays}d</span>
+      </div>`:''}
+    </div>
+    <div class="kpi danger"><div class="kpi-label">Overdue</div><div class="kpi-value">${ov}</div><div class="kpi-sub">requires immediate action</div></div>
+    <div class="kpi warn"><div class="kpi-label">Due ≤ 3 Days</div><div class="kpi-value">${ds}</div><div class="kpi-sub">approaching deadline</div></div>
+    <div class="kpi ok"><div class="kpi-label">Completed</div><div class="kpi-value">${done}</div><div class="kpi-sub">${rate}% completion rate</div></div>`;
+
+  const barsData=[
+    {id:'statusBar',lid:'statusLegend',items:[
+      {l:'To Do',    c:'#888780',n:tasks.filter(t=>t.status==='todo').length},
+      {l:'In Progress',c:'#0891b2',n:inP},
+      {l:'Procurement',c:'#c2410c',n:tasks.filter(t=>t.status==='procurement').length},
+      {l:'Blocked',  c:'#7c3aed',n:tasks.filter(t=>t.status==='blocked').length},
+      {l:'Done',     c:'#16a34a',n:done}]},
+    {id:'priorityBar',lid:'priorityLegend',items:[
+      {l:'High',  c:'#dc2626',n:tasks.filter(t=>t.priority==='high').length},
+      {l:'Medium',c:'#d97706',n:tasks.filter(t=>t.priority==='medium').length},
+      {l:'Low',   c:'#0891b2',n:tasks.filter(t=>t.priority==='low').length}]},
+  ];
+  barsData.forEach(({id,lid,items})=>{
+    document.getElementById(id).innerHTML=items.filter(i=>i.n>0).map(i=>`<div class="stack-bar-seg" style="flex:${i.n};background:${i.c};">${i.n}</div>`).join('')||`<div class="stack-bar-seg" style="flex:1;background:var(--bg-4);color:var(--ink-mute);">No tasks</div>`;
+    document.getElementById(lid).innerHTML=items.map(i=>`<div class="legend-item"><span class="legend-dot" style="background:${i.c};"></span>${i.l} (${i.n})</div>`).join('');
+  });
+  const wl=team.map(p=>({...p,cnt:tasks.filter(t=>t.status!=='done'&&t.personnel.includes(p.id)).length})).filter(w=>w.cnt>0).sort((a,b)=>b.cnt-a.cnt);
+  const mx=Math.max(...wl.map(w=>w.cnt),1);
+  document.getElementById('workloadList').innerHTML=wl.length?wl.map(w=>`
+    <div class="workload-row"><div><div class="workload-name">${esc(w.name)}</div><div class="workload-role">${ROLE_MAP[w.role].label}</div></div>
+    <div class="workload-bar"><div class="workload-fill" style="width:${w.cnt/mx*100}%"></div></div>
+    <div class="workload-count">${w.cnt}</div></div>`).join(''):'<div style="color:var(--ink-mute);font-size:12px;">No active tasks assigned</div>';
+  const alerts=tasks.filter(t=>isOverdue(t)||isDueSoon(t)).sort((a,b)=>new Date(a.due)-new Date(b.due));
+  const al=document.getElementById('alertList');
+  al.innerHTML=alerts.length?alerts.map(renderCard).join(''):'<div style="color:var(--ink-mute);font-size:13px;text-align:center;padding:20px;">✓ No overdue or imminent deadlines</div>';
+  if(alerts.length)bindCards(al);
+}
+
+/* ======== TASKS ======== */
+function renderTasks(){
+  const s=document.getElementById('searchInput').value.toLowerCase();
+  const fs=document.getElementById('filterStatus').value,fp=document.getElementById('filterPriority').value,
+    fpe=document.getElementById('filterPerson').value,fd=document.getElementById('filterDue').value;
+  let list=tasks.slice();
+  if(s)list=list.filter(t=>t.title.toLowerCase().includes(s)||(t.remarks||'').toLowerCase().includes(s)||t.id.toLowerCase().includes(s));
+  if(fs)list=list.filter(t=>t.status===fs);
+  if(fp)list=list.filter(t=>t.priority===fp);
+  if(fpe)list=list.filter(t=>t.personnel.includes(fpe));
+  if(fd==='overdue')list=list.filter(isOverdue);
+  if(fd==='week')list=list.filter(t=>{const d=dateDiff(todayStr(),t.due);return d>=0&&d<=7;});
+  if(fd==='month')list=list.filter(t=>{const d=dateDiff(todayStr(),t.due);return d>=0&&d<=30;});
+  list.sort((a,b)=>a.status==='done'&&b.status!=='done'?1:a.status!=='done'&&b.status==='done'?-1:new Date(a.due)-new Date(b.due));
+  const el=document.getElementById('taskList');
+  el.innerHTML=list.length?list.map(renderCard).join(''):'<div class="empty-state"><h3>No tasks match</h3><p>Adjust filters or create a new task.</p></div>';
+  if(list.length)bindCards(el);
+  document.getElementById('tasksCount').textContent=tasks.length;
+}
+function renderCard(t){
+  const ov=isOverdue(t),ds=isDueSoon(t);
+  let cls='task-card';
+  if(t.status==='done')cls+=' done';else if(ov)cls+=' overdue';else if(ds)cls+=' due-soon';else if(t.status==='in-progress')cls+=' in-progress';else if(t.status==='procurement')cls+=' procurement';
+  const names=t.personnel.map(id=>{const p=person(id);return p?p.name:id;});
+  const nd=names.length===0?'<em style="color:var(--ink-mute);">Unassigned</em>':esc(names.slice(0,3).join(', '))+(names.length>3?` <span style="color:var(--accent);">+${names.length-3}</span>`:'');
+  const diff=dateDiff(todayStr(),t.due);
+  const dt=t.status==='done'?'done':diff<0?`⚠ ${Math.abs(diff)}d overdue`:diff===0?'due today':`${diff}d left`;
+  const sl={'todo':'To Do','in-progress':'In Progress','procurement':'Procurement','blocked':'Blocked','done':'Done'}[t.status]||t.status;
+  const prog=t.progress||0;
+  return `<div class="${cls}" data-id="${t.id}">
+    <div class="task-id">${t.id}</div>
+    <div class="task-main">
+      <div class="task-title ${t.status==='done'?'done-text':''}">${esc(t.title)}</div>
+      <div class="task-meta"><span>📅 ${t.start} → ${t.due}</span><span>⏱ ${dt}</span><span>🔧 ${prog}d worked</span>${t.remarks?`<span title="${esc(t.remarks)}">📝 ${esc(t.remarks.length>45?t.remarks.slice(0,45)+'…':t.remarks)}</span>`:''}</div>
+    </div>
+    <div class="task-people"><span class="task-people-label">Assigned</span>${nd}</div>
+    <div><span class="badge badge-priority-${t.priority}">${t.priority}</span></div>
+    <div><span class="badge badge-status-${t.status}">${sl}</span></div>
+    <div class="task-actions"><button class="icon-btn edit-btn" data-id="${t.id}" title="Edit">✎</button><button class="icon-btn del-btn" data-id="${t.id}" title="Delete">🗑</button></div>
+  </div>`;
+}
+function bindCards(c){
+  c.querySelectorAll('.edit-btn').forEach(b=>b.onclick=e=>{e.stopPropagation();openTaskModal(b.dataset.id);});
+  c.querySelectorAll('.del-btn').forEach(b=>b.onclick=e=>{
+    e.stopPropagation();
+    const t=tasks.find(x=>x.id===b.dataset.id);if(!t)return;
+    if(confirm(`Delete "${t.title}"?`)){tasks=tasks.filter(x=>x.id!==b.dataset.id);saveTasks();renderAll();showToast('Task deleted');}
+  });
+}
+
+/* ======== GANTT ======== */
+function renderGantt(){
+  const N=21,today=new Date(),sd=new Date(today);sd.setDate(today.getDate()+ganttOffset-3);
+  const days=Array.from({length:N},(_,i)=>{const d=new Date(sd);d.setDate(sd.getDate()+i);return d;});
+  document.getElementById('ganttRange').textContent=`${days[0].toISOString().slice(0,10)} → ${days[N-1].toISOString().slice(0,10)}`;
+  const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  let html=`<div class="gantt-header"><div class="gantt-label-col">Task / ID</div><div class="gantt-timeline">`;
+  days.forEach(d=>{
+    const we=d.getDay()===0||d.getDay()===6,t=d.toDateString()===today.toDateString();
+    html+=`<div class="gantt-day ${we?'weekend':''} ${t?'today':''}"><div>${MON[d.getMonth()]}</div><div class="gantt-day-num">${d.getDate()}</div></div>`;
+  });
+  html+=`</div></div>`;
+  const vis=tasks.filter(t=>parseLocal(t.due)>=days[0]&&parseLocal(t.start)<=days[N-1]).sort((a,b)=>parseLocal(a.start)-parseLocal(b.start));
+  if(!vis.length){html+=`<div style="padding:40px;text-align:center;color:var(--ink-mute);font-size:13px;">No tasks in this date range</div>`;}
+  else{
+    vis.forEach(t=>{
+      const names=t.personnel.map(id=>{const p=person(id);return p?p.name:'?';});
+      const shortNames=names.map(n=>n.replace(/^Tradesman\s+/,'TD-').replace(/^Attendant\s+/,'AT-').replace(/^Foreman\s+/,'FM-').replace(/\s*\(.*\)/,'')).join(' · ');
+      const fullNames=names.join(', ')||'Unassigned';
+      html+=`<div class="gantt-row"><div class="gantt-row-label">
+        <div class="gantt-row-title">${esc(t.title)}</div>
+        <div class="gantt-row-sub">${t.id} · ${esc(fullNames.length>36?fullNames.slice(0,36)+'…':fullNames)}</div>
+      </div><div class="gantt-row-track">`;
+      days.forEach(d=>{
+        const we=d.getDay()===0||d.getDay()===6,td=d.toDateString()===today.toDateString();
+        html+=`<div class="gantt-day ${we?'weekend':''} ${td?'today':''}"></div>`;
+      });
+      const si=Math.max(0,Math.round((parseLocal(t.start)-days[0])/864e5));
+      const ei=Math.min(N-1,Math.round((parseLocal(t.due)-days[0])/864e5));
+      const barW=(ei-si+1)/N*100;
+      const barL=si/N*100;
+      let bc=`gantt-bar priority-${t.priority}`;
+      if(t.status==='done')bc+=' done';
+      if(isOverdue(t))bc+=' overdue';
+
+      const daysWorked = t.progress||0;
+      const dur        = taskDuration(t);
+      const elapsed    = daysElapsed(t);
+      // fill % = days worked / total duration (visual fill inside the bar)
+      const fillPct    = Math.min(100, daysWorked/dur*100);
+      // delta in days: positive=ahead, negative=behind
+      const deltaDays  = daysWorked - elapsed;
+      let deltaChip='';
+      if(t.status!=='done'&&t.status!=='todo'&&t.status!=='blocked'){
+        if(Math.abs(deltaDays)>=1){
+          const cls=deltaDays<0?'behind':'ahead';
+          const lbl=deltaDays<0?`▼ ${Math.abs(deltaDays)}d behind`:`▲ ${deltaDays}d ahead`;
+          deltaChip=`<div class="gantt-delta ${cls}">${lbl}</div>`;
+        } else if(elapsed>0){
+          deltaChip=`<div class="gantt-delta ontrack">● on track</div>`;
+        }
+      }
+      html+=`<div class="${bc}" style="left:${barL}%;width:${barW}%;" data-id="${t.id}" title="${esc(t.title)} | Worked: ${daysWorked}d / Duration: ${dur}d | Elapsed: ${elapsed}d | ${esc(fullNames)}">
+        <div class="gantt-bar-fill" style="width:${fillPct}%"></div>
+        <div class="gantt-bar-content">
+          <div class="gantt-bar-title">${esc(t.title)} <span style="font-size:9px;opacity:.75;">${daysWorked}d</span></div>
+          <div class="gantt-bar-names">${esc(shortNames||'— unassigned —')}</div>
+        </div>
+        ${deltaChip}
+      </div>`;
+      html+=`</div></div>`;
+    });
+  }
+  const wrap=document.getElementById('ganttChart');
+  wrap.innerHTML=html;
+  const ti=days.findIndex(d=>d.toDateString()===today.toDateString());
+  if(ti>=0){
+    const ln=document.createElement('div');ln.className='gantt-today-line';
+    ln.style.left=`calc(280px + (100% - 280px) * ${(ti+0.5)/N})`;ln.style.top='40px';
+    wrap.appendChild(ln);
+  }
+  wrap.querySelectorAll('.gantt-bar').forEach(b=>b.onclick=()=>openTaskModal(b.dataset.id));
+}
+
+/* ======== TEAM ======== */
+function renderTeam(){
+  document.getElementById('teamCount').textContent=team.length;
+  const c=document.getElementById('teamSections');
+  let html='';
+  ROLES.forEach(role=>{
+    const members=team.filter(p=>p.role===role.key);
+    // Extra slots are any beyond the default — show them in same grid
+    const allSlots=Math.max(role.slots, members.length);
+    html+=`<div class="role-block">
+      <div class="role-block-header">
+        <div class="role-block-left">
+          <div class="role-color-bar" style="background:${role.color};"></div>
+          <div class="role-block-title" style="color:${role.color};">${role.label}</div>
+          <div class="role-block-count">${members.filter(m=>m.name.trim()).length} / ${role.slots} default slots</div>
+        </div>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-mute);">Type name · Save when done</span>
+      </div>
+      <div class="role-block-body">
+        <div class="name-grid">`;
+    for(let i=0;i<allSlots;i++){
+      const m=members[i];
+      const active =m?tasks.filter(t=>t.status!=='done'&&t.personnel.includes(m.id)).length:0;
+      const doneC  =m?tasks.filter(t=>t.status==='done'&&t.personnel.includes(m.id)).length:0;
+      const lateC  =m?tasks.filter(t=>isOverdue(t)&&t.personnel.includes(m.id)).length:0;
+      const isExtra=i>=role.slots;
+      html+=`<div class="name-row" data-role="${role.key}" data-slot="${i}" ${isExtra?'style="border-style:dashed;border-color:var(--line-2);"':''}>
+        <span class="name-row-num" style="${isExtra?'color:var(--accent);':''}">+${i+1}</span>
+        <input class="name-input" data-pid="${m?m.id:''}" data-role="${role.key}" data-slot="${i}"
+          value="${m?esc(m.name):''}" placeholder="${isExtra?'Additional person…':'— click to add name —'}" autocomplete="off" spellcheck="false">
+        ${m?`<div class="name-row-stats">
+          <div class="stat-chip"><div class="stat-chip-num">${active}</div><div class="stat-chip-label">active</div></div>
+          <div class="stat-chip"><div class="stat-chip-num">${doneC}</div><div class="stat-chip-label">done</div></div>
+          <div class="stat-chip" style="color:${lateC>0?'var(--danger)':'inherit'}"><div class="stat-chip-num">${lateC}</div><div class="stat-chip-label">late</div></div>
+        </div>`:''}
+        <span class="unsaved-dot" id="ud-${role.key}-${i}"></span>
+      </div>`;
+    }
+    html+=`</div>
+        <!-- ADD PERSON INLINE FORM -->
+        <div class="add-person-form" data-role="${role.key}">
+          <div>
+            <label>Add to ${role.label}</label>
+            <input type="text" class="add-name-input" placeholder="Full name…" style="width:220px;" data-role="${role.key}">
+          </div>
+          <div>
+            <label>Category (optional change)</label>
+            <select class="add-role-select" data-role="${role.key}">
+              ${ROLES.map(r=>`<option value="${r.key}" ${r.key===role.key?'selected':''}>${r.label}</option>`).join('')}
+            </select>
+          </div>
+          <div style="padding-top:18px;">
+            <button class="btn btn-primary btn-sm add-person-btn" data-role="${role.key}">+ Add</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  });
+  c.innerHTML=html;
+
+  // Bind input change → dirty
+  c.querySelectorAll('.name-input').forEach(inp=>{
+    inp.addEventListener('input',()=>{
+      const dot=document.getElementById(`ud-${inp.dataset.role}-${inp.dataset.slot}`);
+      if(dot)dot.classList.add('show');
+      markDirty();
+    });
+  });
+
+  // Bind Add Person buttons
+  c.querySelectorAll('.add-person-btn').forEach(btn=>{
+    btn.onclick=()=>{
+      const form=btn.closest('.add-person-form');
+      const nameInput=form.querySelector('.add-name-input');
+      const roleSelect=form.querySelector('.add-role-select');
+      const name=nameInput.value.trim();
+      const role=roleSelect.value;
+      if(!name){showToast('Please enter a name',true);nameInput.focus();return;}
+      const nid=`p-${Date.now()}-${Math.random().toString(36).slice(2,6)}`;
+      team.push({id:nid,name,role});
+      nameInput.value='';
+      markDirty();
+      renderTeam(); // re-render to show new slot
+      showToast(`${name} added — click Save Roster to confirm`);
+    };
+  });
+}
+
+async function saveRoster(){
+  const inputs=document.querySelectorAll('#teamSections .name-input');
+  inputs.forEach(inp=>{
+    const name=inp.value.trim(),pid=inp.dataset.pid,role=inp.dataset.role;
+    if(pid){const idx=team.findIndex(p=>p.id===pid);if(idx>=0)team[idx].name=name;}
+    // new slots with no pid are already pushed to team[] by the Add button
+    const dot=document.getElementById(`ud-${role}-${inp.dataset.slot}`);
+    if(dot)dot.classList.remove('show');
+  });
+  // Remove team members with empty names (blank slots)
+  team=team.filter(p=>p.name.trim());
+  await saveTeam();
+  markClean();
+  populateFilters();
+  renderDashboard();
+  renderGantt();
+  renderTeam();
+  showToast('Roster saved successfully');
+}
+function discardRoster(){
+  if(!confirm('Discard all unsaved roster changes?'))return;
+  // reload from saved state
+  window.storage.get(TEAM_KEY).then(r=>{
+    if(r&&r.value)team=JSON.parse(r.value);
+    renderTeam();markNone();showToast('Changes discarded');
+  }).catch(()=>{renderTeam();markNone();});
+}
+
+/* ======== TASK MODAL ======== */
+function openTaskModal(taskId=null){
+  editingTaskId=taskId;
+  const t=taskId?tasks.find(x=>x.id===taskId):null;
+  document.getElementById('taskModalTitle').textContent=t?`Edit ${t.id}`:'New Task';
+  let ch='';
+  ROLES.forEach(role=>{
+    const members=team.filter(p=>p.role===role.key&&p.name.trim());
+    if(!members.length)return;
+    ch+=`<div class="cg-title" style="color:${role.color};">${role.label}</div><div class="cg-body">`;
+    members.forEach(p=>{ch+=`<label><input type="checkbox" value="${p.id}"${t&&t.personnel.includes(p.id)?' checked':''}>${esc(p.name)}</label>`;});
+    ch+=`</div>`;
+  });
+  document.getElementById('f_personnel').innerHTML=ch||'<div style="padding:14px;color:var(--ink-mute);font-size:12px;">No personnel yet — fill in the Team tab first.</div>';
+
+  const prog=t?(t.progress||0):0;
+  // Set slider max to task duration so user can't enter more days than the task spans
+  const dur=t?taskDuration(t):30;
+  const slider=document.getElementById('f_progress');
+  slider.max=dur;
+  slider.value=prog;
+  document.getElementById('f_progress_val').textContent=prog+'d';
+  document.getElementById('f_progress_label').textContent=`${prog} day${prog===1?'':'s'} worked of ${dur}d total`;
+  document.getElementById('f_progress_fill').style.width=(prog/dur*100)+'%';
+
+  if(t){
+    document.getElementById('f_title').value=t.title;
+    document.getElementById('f_start').value=t.start;
+    document.getElementById('f_due').value=t.due;
+    document.getElementById('f_priority').value=t.priority;
+    document.getElementById('f_status').value=t.status;
+    document.getElementById('f_remarks').value=t.remarks||'';
+  } else {
+    document.getElementById('f_title').value='';
+    document.getElementById('f_start').value=todayStr();
+    const d3=new Date();d3.setDate(d3.getDate()+3);
+    document.getElementById('f_due').value=d3.toISOString().slice(0,10);
+    document.getElementById('f_priority').value='medium';
+    document.getElementById('f_status').value='todo';
+    document.getElementById('f_remarks').value='';
+  }
+  document.getElementById('taskModal').classList.add('open');
+}
+function closeTaskModal(){document.getElementById('taskModal').classList.remove('open');editingTaskId=null;}
+async function saveTaskFromModal(){
+  const title=document.getElementById('f_title').value.trim();
+  const start=document.getElementById('f_start').value,due=document.getElementById('f_due').value;
+  if(!title||!start||!due){showToast('Title, start, and deadline are required',true);return;}
+  if(parseLocal(due)<parseLocal(start)){showToast('Deadline must be after start',true);return;}
+  const personnel=Array.from(document.querySelectorAll('#f_personnel input:checked')).map(i=>i.value);
+  const progress=parseInt(document.getElementById('f_progress').value)||0;
+  const data={title,start,due,priority:document.getElementById('f_priority').value,status:document.getElementById('f_status').value,personnel,progress,remarks:document.getElementById('f_remarks').value.trim()};
+  if(editingTaskId){const idx=tasks.findIndex(t=>t.id===editingTaskId);tasks[idx]={...tasks[idx],...data};showToast('Task updated');}
+  else{tasks.push({id:nextTaskId(),...data,created:todayStr()});showToast('Task created');}
+  await saveTasks();closeTaskModal();renderAll();
+}
+
+/* ======== EXPORT ======== */
+function exportCsv(){
+  const rows=tasks.map(t=>[t.id,`"${t.title.replace(/"/g,'""')}"`,t.start,t.due,t.priority,t.status,t.progress||0,`"${t.personnel.map(id=>(person(id)||{}).name||'(deleted)').join('; ')}"`,`"${(t.remarks||'').replace(/"/g,'""')}"`].join(','));
+  const blob=new Blob([['ID,Title,Start,Deadline,Priority,Status,DaysWorked,Assigned,Remarks',...rows].join('\n')],{type:'text/csv'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`pm-tasks-${todayStr()}.csv`;a.click();URL.revokeObjectURL(url);showToast('CSV exported');
+}
+
+/* ======== NAV ======== */
+function setView(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.view===name));
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+name));
+  if(name==='dashboard')renderDashboard();
+  if(name==='tasks')renderTasks();
+  if(name==='gantt')renderGantt();
+  if(name==='team'){renderTeam();markNone();}
+}
+function populateFilters(){
+  const sel=document.getElementById('filterPerson'),cur=sel.value;
+  sel.innerHTML='<option value="">All Personnel</option>'+team.filter(p=>p.name.trim()).map(p=>`<option value="${p.id}"${p.id===cur?' selected':''}>${esc(p.name)} — ${ROLE_MAP[p.role].label}</option>`).join('');
+}
+function renderAll(){populateFilters();renderDashboard();renderTasks();renderGantt();renderTeam();}
+
+/* ======== INIT ======== */
+async function init(){
+  await loadAll();renderAll();markNone();
+
+  document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>setView(t.dataset.view));
+  document.getElementById('newTaskBtn').onclick=()=>openTaskModal();
+  document.getElementById('taskModalClose').onclick=closeTaskModal;
+  document.getElementById('taskModalCancel').onclick=closeTaskModal;
+  document.getElementById('taskModalSave').onclick=saveTaskFromModal;
+  document.getElementById('taskModal').onclick=e=>{if(e.target.id==='taskModal')closeTaskModal();};
+
+  // Progress slider live update (days)
+  document.getElementById('f_progress').addEventListener('input',function(){
+    const days=parseInt(this.value)||0;
+    const max=parseInt(this.max)||1;
+    document.getElementById('f_progress_val').textContent=days+'d';
+    document.getElementById('f_progress_label').textContent=`${days} day${days===1?'':'s'} worked of ${max}d total`;
+    document.getElementById('f_progress_fill').style.width=(days/max*100)+'%';
+    // auto-set status hints
+    if(days>=max){document.getElementById('f_status').value='done';}
+    else if(days>0&&document.getElementById('f_status').value==='todo'){document.getElementById('f_status').value='in-progress';}
+  });
+
+  document.getElementById('exportBtn').onclick=exportCsv;
+  document.getElementById('saveRosterBtn').onclick=saveRoster;
+  document.getElementById('discardRosterBtn').onclick=discardRoster;
+  document.getElementById('resetBtn').onclick=async()=>{
+    if(confirm('Reset all tasks AND team roster to demo data? All changes will be lost.')){
+      team=seedTeam();tasks=seedTasks();await saveTeam();await saveTasks();renderAll();markNone();showToast('Reset complete');
+    }
+  };
+  ['searchInput','filterStatus','filterPriority','filterPerson','filterDue'].forEach(id=>document.getElementById(id).addEventListener('input',renderTasks));
+  document.getElementById('ganttPrev').onclick=()=>{ganttOffset-=7;renderGantt();};
+  document.getElementById('ganttNext').onclick=()=>{ganttOffset+=7;renderGantt();};
+  document.getElementById('ganttToday').onclick=()=>{ganttOffset=0;renderGantt();};
+}
+init();
+</script>
